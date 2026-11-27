@@ -1,9 +1,5 @@
 name: sentinel-lint-action
-description: >-
-  Scan a repository with the published sentinel-lint security policy linter
-  and produce SARIF 2.1.0, JSON or plain text reports for GitHub code
-  scanning. Zero runtime dependencies; every input is strictly validated and
-  no input ever reaches a shell.
+description: Zero-dependency security linter for GitHub Actions workflows and MCP configs with SARIF 2.1.0 output.
 author: draarivpatel-ui
 branding:
   icon: shield
