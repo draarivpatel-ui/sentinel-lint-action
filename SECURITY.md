@@ -33,9 +33,12 @@ generation or workflow integration belong here.
   workspace. Parent traversal and absolute paths outside the checkout are
   rejected, so an untrusted workflow input cannot scan or leak arbitrary host
   paths.
-- **Script-free install.** The scanner is installed with `--ignore-scripts`
-  into an isolated temporary prefix, and the installed package name and exact
-  version are verified before the binary executes.
+- **Integrity-verified install.** The scanner tarball is downloaded from the
+  npm registry and verified byte for byte against the sha512 integrity value
+  in the registry metadata before extraction. The extractor rejects links,
+  device entries, absolute paths, dot-dot traversal and oversized content.
+  No package manager or lifecycle script ever executes, so the pipeline is
+  identical on Linux, macOS and Windows runners.
 - **SARIF sanitization.** Artifact URIs in generated SARIF are
   repository-relative with drive letters, leading slashes and dot segments
   removed, so a hostile scan target cannot publish absolute host paths into

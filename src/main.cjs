@@ -3,9 +3,9 @@
 /**
  * Entrypoint of the sentinel-lint GitHub Action.
  *
- * Pipeline: validate every input, install the exact published sentinel-lint
- * package into an isolated prefix with lifecycle scripts disabled, run one
- * scan in the machine readable JSON format, render the requested report
+ * Pipeline: validate every input, download the exact published sentinel-lint
+ * tarball with sha512 integrity verification into an isolated directory, run
+ * one scan in the machine readable JSON format, render the requested report
  * format in pure zero-dependency Node.js, publish step outputs, and fail the
  * step exactly when the scanner says findings reached the fail threshold.
  */
@@ -28,11 +28,11 @@ const REPORT_BASENAMES = Object.freeze({
 });
 
 /**
- * Run the action. Returns the process exit code.
+ * Run the action. Resolves with the process exit code.
  * @param {object} env usually process.env
- * @returns {number}
+ * @returns {Promise<number>}
  */
-function run(env) {
+async function run(env) {
   const workspace = env.GITHUB_WORKSPACE || process.cwd();
 
   let inputs;
@@ -69,7 +69,7 @@ function run(env) {
     const installDir = path.join(tempDir, 'install');
     let packageRoot;
     try {
-      packageRoot = installSentinelLint({ version: inputs.version, installDir });
+      packageRoot = await installSentinelLint({ version: inputs.version, installDir });
     } catch (err) {
       if (err instanceof InstallError) {
         error(err.message);
@@ -77,7 +77,7 @@ function run(env) {
       }
       throw err;
     }
-    info(`sentinel-lint-action: installed sentinel-lint@${inputs.version} in an isolated prefix`);
+    info(`sentinel-lint-action: installed sentinel-lint@${inputs.version} with verified integrity`);
 
     const jsonReportPath = path.join(tempDir, 'scan-report.json');
     const binPath = path.join(packageRoot, 'bin', 'sentinel-lint.mjs');
@@ -152,12 +152,15 @@ function run(env) {
 }
 
 if (require.main === module) {
-  try {
-    process.exitCode = run(process.env);
-  } catch (err) {
-    error(`sentinel-lint-action failed unexpectedly: ${err && err.stack ? err.stack : String(err)}`);
-    process.exitCode = 1;
-  }
+  run(process.env).then(
+    (code) => {
+      process.exitCode = code;
+    },
+    (err) => {
+      error(`sentinel-lint-action failed unexpectedly: ${err && err.stack ? err.stack : String(err)}`);
+      process.exitCode = 1;
+    },
+  );
 }
 
 module.exports = { run, REPORT_BASENAMES };

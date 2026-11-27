@@ -39,6 +39,8 @@ Run the suite with `npm test` (which is `node --test test/`).
   path-traversal attempts against every input.
 - `test/sarif.test.cjs` covers the SARIF 2.1.0 conversion structure.
 - `test/report-text.test.cjs` covers the plain text rendering.
+- `test/untar.test.cjs` covers the defensive tar extraction and the
+  integrity verification with handcrafted archives.
 - `test/integration.test.cjs` performs a live scan of a fixture using the
   published `sentinel-lint` npm package and exercises the full action entry
   point. It needs network access to the npm registry; set

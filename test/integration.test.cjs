@@ -14,7 +14,7 @@ const fs = require('node:fs');
 const { execFileSync } = require('node:child_process');
 
 const { run } = require('../src/main.cjs');
-const { installSentinelLint, findNpmCli } = require('../src/install.cjs');
+const { installSentinelLint } = require('../src/install.cjs');
 const { jsonReportToSarif } = require('../src/sarif.cjs');
 
 const SKIP = process.env.SENTINEL_ACTION_SKIP_NETWORK === '1';
@@ -57,16 +57,10 @@ function readOutputs(outputFile) {
   return outputs;
 }
 
-test('findNpmCli locates the npm client of this Node.js distribution', { skip: SKIP }, () => {
-  const cli = findNpmCli(process.execPath);
-  assert.ok(cli.endsWith('npm-cli.js'));
-  assert.ok(fs.existsSync(cli));
-});
-
-test('the exact published package installs into an isolated prefix', { skip: SKIP }, () => {
+test('the exact published package installs into an isolated prefix', { skip: SKIP }, async () => {
   const installDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sla-it-install-'));
   try {
-    const root = installSentinelLint({ version: '0.2.0', installDir });
+    const root = await installSentinelLint({ version: '0.2.0', installDir });
     const manifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
     assert.equal(manifest.name, 'sentinel-lint');
     assert.equal(manifest.version, '0.2.0');
@@ -76,12 +70,12 @@ test('the exact published package installs into an isolated prefix', { skip: SKI
   }
 });
 
-test('full action run with format sarif produces valid SARIF 2.1.0 and correct outputs', { skip: SKIP }, (t) => {
+test('full action run with format sarif produces valid SARIF 2.1.0 and correct outputs', { skip: SKIP }, async (t) => {
   const workspace = makeWorkspace();
   t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
   const { env, outputFile } = makeEnv(workspace, { INPUT_FORMAT: 'sarif', 'INPUT_FAIL-ON-FINDINGS': 'false' });
 
-  const code = run(env);
+  const code = await run(env);
   assert.equal(code, 0);
 
   const outputs = readOutputs(outputFile);
@@ -107,12 +101,12 @@ test('full action run with format sarif produces valid SARIF 2.1.0 and correct o
   }
 });
 
-test('full action run with format json fails the step when findings reach the threshold', { skip: SKIP }, (t) => {
+test('full action run with format json fails the step when findings reach the threshold', { skip: SKIP }, async (t) => {
   const workspace = makeWorkspace();
   t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
   const { env, outputFile } = makeEnv(workspace, { INPUT_FORMAT: 'json', 'INPUT_FAIL-ON-FINDINGS': 'true', INPUT_SEVERITY: 'warning' });
 
-  const code = run(env);
+  const code = await run(env);
   assert.equal(code, 1, 'warning level findings exist in the fixture, so the step must fail');
 
   const outputs = readOutputs(outputFile);
@@ -124,12 +118,12 @@ test('full action run with format json fails the step when findings reach the th
   assert.equal(report.summary.findings, count);
 });
 
-test('full action run with format text writes a readable report', { skip: SKIP }, (t) => {
+test('full action run with format text writes a readable report', { skip: SKIP }, async (t) => {
   const workspace = makeWorkspace();
   t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
   const { env, outputFile } = makeEnv(workspace, { INPUT_FORMAT: 'text', 'INPUT_FAIL-ON-FINDINGS': 'false' });
 
-  const code = run(env);
+  const code = await run(env);
   assert.equal(code, 0);
   const outputs = readOutputs(outputFile);
   const text = fs.readFileSync(outputs.get('report-file'), 'utf8');
@@ -137,12 +131,12 @@ test('full action run with format text writes a readable report', { skip: SKIP }
   assert.ok(/finding|findings/.test(text));
 });
 
-test('converted SARIF matches the native scanner SARIF in result count and rule ids', { skip: SKIP }, (t) => {
+test('converted SARIF matches the native scanner SARIF in result count and rule ids', { skip: SKIP }, async (t) => {
   const workspace = makeWorkspace();
   t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
 
   const installDir = path.join(workspace, 'install');
-  const root = installSentinelLint({ version: '0.2.0', installDir });
+  const root = await installSentinelLint({ version: '0.2.0', installDir });
   const bin = path.join(root, 'bin', 'sentinel-lint.mjs');
   const target = path.join(workspace, 'target');
 
@@ -168,23 +162,23 @@ test('converted SARIF matches the native scanner SARIF in result count and rule 
   assert.deepEqual(convertedLevels, nativeLevels);
 });
 
-test('a malicious version input fails before any install or scan', { skip: SKIP }, (t) => {
+test('a malicious version input fails before any install or scan', { skip: SKIP }, async (t) => {
   const workspace = makeWorkspace();
   t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
   const { env } = makeEnv(workspace, { INPUT_VERSION: '0.2.0; echo pwned' });
 
-  const code = run(env);
+  const code = await run(env);
   assert.equal(code, 1);
   assert.ok(!fs.existsSync(path.join(workspace, 'sentinel-lint.sarif')));
   assert.ok(!fs.existsSync(path.join(workspace, 'sentinel-lint-report.json')));
 });
 
-test('a path traversal input fails before any install or scan', { skip: SKIP }, (t) => {
+test('a path traversal input fails before any install or scan', { skip: SKIP }, async (t) => {
   const workspace = makeWorkspace();
   t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
   const { env } = makeEnv(workspace, { INPUT_PATH: '../../etc' });
 
-  const code = run(env);
+  const code = await run(env);
   assert.equal(code, 1);
   assert.ok(!fs.existsSync(path.join(workspace, 'sentinel-lint.sarif')));
 });

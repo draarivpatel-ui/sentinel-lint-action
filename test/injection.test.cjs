@@ -87,7 +87,10 @@ test('every child process execution goes through execFileSync with an argument a
     const matches = source.match(/execFileSync\s*\(/g);
     if (matches) execFileSites += matches.length;
   }
-  assert.ok(execFileSites >= 2, 'expected execFileSync call sites for npm and the scanner');
+  // The scanner binary is the only child process in the action; the package
+  // itself is downloaded and extracted in process, never through a package
+  // manager, so no second exec site may ever appear.
+  assert.equal(execFileSites, 1, 'the scanner must be the only child process execution site');
 });
 
 test('the scan module passes fail-on as a literal validated value', () => {

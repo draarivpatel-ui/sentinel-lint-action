@@ -13,9 +13,11 @@ straight into GitHub code scanning.
 - **Strictly validated inputs.** The package version must be exact semver,
   severities and formats are allowlisted, and scan paths that escape the
   workspace are rejected before anything executes.
-- **Supply-chain conscious install.** The scanner is installed into an
-  isolated prefix with `--ignore-scripts`, and the installed package name and
-  exact version are verified before the binary runs.
+- **Supply-chain conscious install.** The scanner tarball is downloaded
+  straight from the npm registry, verified byte for byte against the sha512
+  integrity value in the registry metadata, and extracted with a defensive
+  zero-dependency tar parser. No package manager or lifecycle script ever
+  executes, on any operating system.
 
 ## Usage
 
@@ -124,9 +126,10 @@ string with shell metacharacters fails validation before npm ever runs.
 ## Security
 
 See [SECURITY.md](SECURITY.md). In short: inputs are validated against
-allowlists, no shell is ever invoked, the scanner is installed with lifecycle
-scripts disabled, and SARIF artifact URIs are sanitized so a hostile scan
-target cannot publish absolute host paths into code scanning alerts.
+allowlists, no shell is ever invoked, the scanner tarball is verified against
+registry integrity metadata before extraction, and SARIF artifact URIs are
+sanitized so a hostile scan target cannot publish absolute host paths into
+code scanning alerts.
 
 ## Contributing
 
