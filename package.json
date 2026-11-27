@@ -5,11 +5,19 @@
   "license": "MIT",
   "private": true,
   "type": "commonjs",
+  "files": [
+    "src",
+    "action.yml",
+    "README.md",
+    "SECURITY.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test test/"
+    "test": "node --test test/",
+    "test:fuzz": "node --test test/fuzz.test.js"
   },
   "keywords": [
     "github-actions",
@@ -22,5 +30,7 @@
     "sentinel-lint"
   ],
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "fast-check": "4.10.3"
+  }
 }
