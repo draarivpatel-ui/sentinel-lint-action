@@ -1,5 +1,7 @@
 # sentinel-lint-action
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/draarivpatel-ui/sentinel-lint-action/badge)](https://scorecard.dev/viewer/?uri=github.com/draarivpatel-ui/sentinel-lint-action)
+
 GitHub Action that scans your repository with the published
 [`sentinel-lint`](https://github.com/draarivpatel-ui/sentinel-lint) security
 policy linter and produces SARIF 2.1.0, JSON or plain text reports that plug
