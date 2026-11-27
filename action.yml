@@ -1,0 +1,59 @@
+name: sentinel-lint-action
+description: >-
+  Scan a repository with the published sentinel-lint security policy linter
+  and produce SARIF 2.1.0, JSON or plain text reports for GitHub code
+  scanning. Zero runtime dependencies; every input is strictly validated and
+  no input ever reaches a shell.
+author: draarivpatel-ui
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  version:
+    description: >-
+      Exact semver version of the published sentinel-lint npm package to run.
+      Strict semver is enforced, so ranges, tags and arbitrary strings are
+      rejected before anything executes.
+    required: false
+    default: '0.2.0'
+  path:
+    description: >-
+      Directory or file to scan, relative to the workspace root. Paths that
+      resolve outside the workspace are rejected.
+    required: false
+    default: '.'
+  severity:
+    description: >-
+      Minimum severity that fails the step when fail-on-findings is true.
+      One of info, warning, error, critical; these are the exact severities
+      of the sentinel-lint CLI.
+    required: false
+    default: 'warning'
+  format:
+    description: >-
+      Report format written into the workspace. One of text, json or sarif.
+      The sarif report is valid SARIF 2.1.0 converted from the machine
+      readable scan output in pure zero-dependency Node.js.
+    required: false
+    default: 'sarif'
+  fail-on-findings:
+    description: >-
+      When true the step fails if any finding reaches the severity threshold.
+      When false the scan is informational and the step stays green.
+    required: false
+    default: 'true'
+
+outputs:
+  findings-count:
+    description: Total number of findings reported by the scan.
+  report-file:
+    description: Absolute path of the report file written into the workspace.
+  sarif-file:
+    description: >-
+      Absolute path of the SARIF 2.1.0 file when format is sarif, empty
+      otherwise. Pass this to github/codeql-action/upload-sarif.
+
+runs:
+  using: node20
+  main: src/main.cjs

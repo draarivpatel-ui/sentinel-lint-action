@@ -1,0 +1,68 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: unit and integration tests
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run the test suite
+        run: node --test test/
+
+  self-test:
+    name: action self-test on the runner
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run this action against the vulnerable fixture
+        id: selftest
+        uses: ./
+        with:
+          path: test/fixtures/vulnerable
+          format: sarif
+          severity: warning
+          fail-on-findings: 'false'
+      - name: Verify the action outputs
+        env:
+          FINDINGS_COUNT: ${{ steps.selftest.outputs.findings-count }}
+          SARIF_FILE: ${{ steps.selftest.outputs.sarif-file }}
+        run: node scripts/verify-action-selftest.cjs
+
+  self-test-fail-mode:
+    name: action self-test with failing threshold
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run this action in fail-on-findings mode
+        id: strict
+        uses: ./
+        continue-on-error: true
+        with:
+          path: test/fixtures/vulnerable
+          format: json
+          severity: warning
+          fail-on-findings: 'true'
+      - name: The scan step must have failed
+        env:
+          OUTCOME: ${{ steps.strict.outcome }}
+          FINDINGS_COUNT: ${{ steps.strict.outputs.findings-count }}
+        run: node scripts/verify-strict-failure.cjs

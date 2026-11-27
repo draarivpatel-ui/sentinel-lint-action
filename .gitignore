@@ -1,0 +1,5 @@
+node_modules/
+sentinel-lint-report.json
+sentinel-lint-report.txt
+sentinel-lint.sarif
+.DS_Store

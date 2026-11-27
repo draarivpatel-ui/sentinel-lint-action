@@ -1,0 +1,26 @@
+{
+  "name": "sentinel-lint-action",
+  "version": "1.0.0",
+  "description": "GitHub Action that scans a repository with the published sentinel-lint npm package and produces SARIF 2.1.0, JSON or plain text reports with zero runtime dependencies.",
+  "license": "MIT",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "keywords": [
+    "github-actions",
+    "security",
+    "appsec",
+    "static-analysis",
+    "sarif",
+    "nodejs",
+    "devsecops",
+    "sentinel-lint"
+  ],
+  "dependencies": {},
+  "devDependencies": {}
+}
