@@ -40,7 +40,7 @@ function makeEnv(workspace, overrides) {
       INPUT_PATH: 'target',
       INPUT_SEVERITY: 'warning',
       INPUT_FORMAT: 'sarif',
-      INPUT_FAIL_ON_FINDINGS: 'false',
+      'INPUT_FAIL-ON-FINDINGS': 'false',
       ...overrides,
     },
     outputFile,
@@ -79,7 +79,7 @@ test('the exact published package installs into an isolated prefix', { skip: SKI
 test('full action run with format sarif produces valid SARIF 2.1.0 and correct outputs', { skip: SKIP }, (t) => {
   const workspace = makeWorkspace();
   t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
-  const { env, outputFile } = makeEnv(workspace, { INPUT_FORMAT: 'sarif', INPUT_FAIL_ON_FINDINGS: 'false' });
+  const { env, outputFile } = makeEnv(workspace, { INPUT_FORMAT: 'sarif', 'INPUT_FAIL-ON-FINDINGS': 'false' });
 
   const code = run(env);
   assert.equal(code, 0);
@@ -110,7 +110,7 @@ test('full action run with format sarif produces valid SARIF 2.1.0 and correct o
 test('full action run with format json fails the step when findings reach the threshold', { skip: SKIP }, (t) => {
   const workspace = makeWorkspace();
   t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
-  const { env, outputFile } = makeEnv(workspace, { INPUT_FORMAT: 'json', INPUT_FAIL_ON_FINDINGS: 'true', INPUT_SEVERITY: 'warning' });
+  const { env, outputFile } = makeEnv(workspace, { INPUT_FORMAT: 'json', 'INPUT_FAIL-ON-FINDINGS': 'true', INPUT_SEVERITY: 'warning' });
 
   const code = run(env);
   assert.equal(code, 1, 'warning level findings exist in the fixture, so the step must fail');
@@ -127,7 +127,7 @@ test('full action run with format json fails the step when findings reach the th
 test('full action run with format text writes a readable report', { skip: SKIP }, (t) => {
   const workspace = makeWorkspace();
   t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
-  const { env, outputFile } = makeEnv(workspace, { INPUT_FORMAT: 'text', INPUT_FAIL_ON_FINDINGS: 'false' });
+  const { env, outputFile } = makeEnv(workspace, { INPUT_FORMAT: 'text', 'INPUT_FAIL-ON-FINDINGS': 'false' });
 
   const code = run(env);
   assert.equal(code, 0);

@@ -31,13 +31,26 @@ test('explicit inputs are read from INPUT_ environment variables', () => {
     INPUT_PATH: 'src',
     INPUT_SEVERITY: 'critical',
     INPUT_FORMAT: 'json',
-    INPUT_FAIL_ON_FINDINGS: 'false',
+    'INPUT_FAIL-ON-FINDINGS': 'false',
   });
   assert.equal(inputs.version, '1.2.3');
   assert.equal(inputs.scanPathInput, 'src');
   assert.equal(inputs.severity, 'critical');
   assert.equal(inputs.format, 'json');
   assert.equal(inputs.failOnFindings, false);
+});
+
+test('hyphenated input names arrive with hyphens preserved, the exact runner behavior', () => {
+  // Regression test: the GitHub Actions runner uppercases input names and
+  // replaces spaces with underscores, but preserves hyphens. Reading
+  // INPUT_FAIL_ON_FINDINGS instead of INPUT_FAIL-ON-FINDINGS silently falls
+  // back to the default and inverts the fail gate.
+  const strict = readInputs({ 'INPUT_FAIL-ON-FINDINGS': 'false' });
+  assert.equal(strict.failOnFindings, false);
+  const fallback = readInputs({ INPUT_FAIL_ON_FINDINGS: 'false' });
+  assert.equal(fallback.failOnFindings, false);
+  const exactWins = readInputs({ 'INPUT_FAIL-ON-FINDINGS': 'false', INPUT_FAIL_ON_FINDINGS: 'true' });
+  assert.equal(exactWins.failOnFindings, false);
 });
 
 test('valid semver versions are accepted', () => {

@@ -37,9 +37,18 @@ const DEFAULTS = Object.freeze({
   'fail-on-findings': 'true',
 });
 
+/**
+ * Resolve the environment key for an input exactly the way the GitHub
+ * Actions runner does: the input name uppercased with spaces replaced by
+ * underscores. Hyphens are preserved, so `fail-on-findings` arrives as
+ * INPUT_FAIL-ON-FINDINGS, not INPUT_FAIL_ON_FINDINGS. The underscore form is
+ * accepted as a fallback for local harnesses that cannot easily set
+ * hyphenated environment variables.
+ */
 function readRawInput(env, name) {
-  const key = `INPUT_${name.replace(/-/g, '_').toUpperCase()}`;
-  const raw = env[key];
+  const exactKey = `INPUT_${name.replace(/ /g, '_').toUpperCase()}`;
+  const fallbackKey = `INPUT_${name.replace(/-/g, '_').toUpperCase()}`;
+  const raw = env[exactKey] !== undefined && env[exactKey].trim() !== '' ? env[exactKey] : env[fallbackKey];
   if (raw === undefined || raw.trim() === '') return DEFAULTS[name];
   return raw.trim();
 }
